@@ -39,10 +39,13 @@ int main(void){
     LCD_Init();
     printf("OK!\r\n\r\n");
     printf("-----------------------------------------\r\n");
+    Fill(0,0,240,320,0x0000); // 清屏
     float fps = screenTest(TEST_SCREEN_ITER);
+    //float fps = 0.0f;
     printf("\r\n");
     printf("-----------------------------------------\r\n");
     float sps = spriteTest(TEST_SPRITE_ITER);
+    //float sps = 0.0f;
     printf("\r\nAll Test Finished.\r\n");
     printf("-----------------------------------------\r\n");
     printf("SUMMARY:\r\n");
@@ -57,7 +60,7 @@ static float screenTest(int iter){
     printf("Iteration:%04d frames.\r\n\r\n",iter);
     uint64_t st = get_time();
     for(int f = 0;f < iter;f++){
-        Draw(0,0,icon_large,240,240);
+        Draw(0,0,icon_large,240,320);
         if(f % 150 == 0 && f){
             uint64_t elapsed = get_time() - st;
             printf("%04d frames:%5.3f sec\r\n",f,(elapsed / (float)1e6));

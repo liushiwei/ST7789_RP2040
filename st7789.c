@@ -42,7 +42,7 @@ static void burstWriteCPU8(uint8_t addr,uint8_t* data,uint8_t length);
 static void burstWriteCPU16(uint8_t addr,uint16_t* data,uint16_t length);
 
 /* 多字节 DMA 传输*/
-static void burstWriteDMA16(uint8_t addr,uint16_t* data,uint16_t length,int inc);
+static void burstWriteDMA16(uint8_t addr,uint16_t* data,uint32_t length,int inc);
 
 /* 设置 VRAM 写入位置*/
 static void setMemoryAddress(uint16_t xs,uint16_t ys,uint16_t xe,uint16_t ye);
@@ -117,7 +117,7 @@ void Fill(uint x1,uint y1,uint x2,uint y2,uint16_t color){
     int width = x2 - x1;
     int height = y2 - y1;
     setMemoryAddress(x1,y1,x2 - 1,y2 -1);
-    burstWriteDMA16(RAMWR,&color,width * height,0);
+    burstWriteDMA16(RAMWR,&color,(uint32_t)width * (uint32_t)height,0);
     return;
 }
 
@@ -132,7 +132,7 @@ height：图形高度
 */
 void Draw(uint x,uint y,uint16_t* graph,uint width,uint height){
     setMemoryAddress(x,y,(x+width-1),(y+height-1));
-    burstWriteDMA16(RAMWR,graph,width*height,1);
+    burstWriteDMA16(RAMWR,graph,(uint32_t)width * (uint32_t)height,1);
     return;
 }
 
@@ -235,7 +235,7 @@ length：数据元素数量
 inc：是否递增待发送数据的地址
 （例如，连续发送相同数据时，例如填充数据块时，则为非零值）
 */
-static void burstWriteDMA16(uint8_t addr,uint16_t* data,uint16_t length,int inc){
+static void burstWriteDMA16(uint8_t addr,uint16_t* data,uint32_t length,int inc){
     dma_channel_config c = dma_channel_get_default_config(dma);
     singleWriteCPU8(addr,0x00,1);
     spi_set_format(_LCD_SPI,16,true,true,SPI_MSB_FIRST);
@@ -247,7 +247,7 @@ static void burstWriteDMA16(uint8_t addr,uint16_t* data,uint16_t length,int inc)
     dma_channel_configure(dma, &c,
                           &spi_get_hw(_LCD_SPI)->dr,
                           data,
-                          length,
+                          (void*)length,
                           true);
     dma_channel_wait_for_finish_blocking(dma);
     while(spi_is_busy(_LCD_SPI)){}; /*即使DMA传输完成，也不一定意味着SPI传输完成，所以要等待*/
